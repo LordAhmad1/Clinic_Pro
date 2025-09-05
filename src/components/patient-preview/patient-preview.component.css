@@ -1,0 +1,242 @@
+.patient-preview-page {
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-red) 100%);
+}
+
+/* RTL Support */
+.patient-preview-page[dir="rtl"] {
+  text-align: right;
+}
+
+.patient-preview-page[dir="rtl"] .btn-group {
+  flex-direction: row-reverse;
+}
+
+.patient-preview-page[dir="rtl"] .d-flex {
+  flex-direction: row-reverse;
+}
+
+.patient-preview-page[dir="rtl"] .me-2 {
+  margin-right: 0 !important;
+  margin-left: 0.5rem !important;
+}
+
+.patient-preview-page[dir="rtl"] .me-3 {
+  margin-right: 0 !important;
+  margin-left: 1rem !important;
+}
+
+.patient-preview-page[dir="rtl"] .ms-3 {
+  margin-left: 0 !important;
+  margin-right: 1rem !important;
+}
+
+.patient-preview-page[dir="rtl"] .gap-2 {
+  gap: 0.5rem !important;
+}
+
+.patient-preview-page[dir="rtl"] .gap-2 > * {
+  margin-left: 0.5rem;
+  margin-right: 0;
+}
+
+.patient-preview-page[dir="rtl"] .gap-2 > *:first-child {
+  margin-left: 0;
+}
+
+.avatar-large {
+  position: relative;
+  display: inline-block;
+}
+
+.prescription-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.prescription-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.medication-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(5px);
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px 16px 0 0 !important;
+}
+
+.form-control, .form-select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  backdrop-filter: blur(5px);
+}
+
+.form-control:focus, .form-select:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.2rem rgba(214, 185, 106, 0.25);
+  color: white;
+}
+
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.table {
+  color: white;
+}
+
+.table th {
+  border-bottom-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.table td {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+}
+
+.modal-body {
+  color: #333;
+}
+
+.modal-body .form-control, .modal-body .form-select {
+  background: white;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.modal-body .form-control:focus, .modal-body .form-select:focus {
+  background: white;
+  border-color: var(--accent-color);
+  color: #333;
+}
+
+.modal-body .form-label {
+  color: #555;
+}
+
+.modal-body .table {
+  color: #333;
+}
+
+.modal-body .table th {
+  border-bottom-color: #ddd;
+  color: #555;
+}
+
+.modal-body .table td {
+  border-bottom-color: #eee;
+}
+
+.badge {
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+}
+
+.text-muted {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.fw-semibold {
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .patient-preview-page {
+    padding: 1rem;
+  }
+  
+  .avatar-large {
+    width: 80px !important;
+    height: 80px !important;
+    font-size: 2rem !important;
+  }
+  
+  .modal-dialog {
+    margin: 1rem;
+  }
+}
+
+/* Animation for prescription items */
+.prescription-item {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom scrollbar for modal */
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: 3px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #c4a85a;
+} 

@@ -1,0 +1,77 @@
+<div class="login-container d-flex align-items-center justify-content-center min-vh-100">
+  <div class="login-form card shadow-lg border-0">
+    <div class="card-body p-4 p-md-5">
+      <div class="text-center mb-4">
+        <i class="fas fa-stethoscope fa-3x mb-3"></i>
+        <h2 class="fw-bold text-dark mb-2">{{ translationService.translate('CLINIC_MANAGEMENT') }}</h2>
+        <p class="text-muted mb-0">{{ translationService.translate('SIGN_IN_TO_ACCOUNT') }}</p>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+        <div class="mb-3">
+          <label for="email" class="form-label fw-semibold text-dark">
+            <i class="fas fa-envelope me-2"></i>{{ translationService.translate('EMAIL') }}
+          </label>
+          <input
+            type="email"
+            class="form-control form-control-lg"
+            id="email"
+            [(ngModel)]="email"
+            name="email"
+            required
+            [placeholder]="translationService.translate('ENTER_EMAIL')"
+          >
+        </div>
+
+        <div class="mb-4">
+          <label for="password" class="form-label fw-semibold text-dark">
+            <i class="fas fa-lock me-2"></i>{{ translationService.translate('PASSWORD') }}
+          </label>
+          <input
+            type="password"
+            class="form-control form-control-lg"
+            id="password"
+            [(ngModel)]="password"
+            name="password"
+            required
+            [placeholder]="translationService.translate('ENTER_PASSWORD')"
+          >
+        </div>
+
+        <div class="alert alert-danger" *ngIf="error">
+          <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary btn-lg w-100 mb-3"
+          [disabled]="loading"
+        >
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!loading" class="fas fa-sign-in-alt me-2"></i>
+          {{ loading ? translationService.translate('SIGNING_IN') : translationService.translate('SIGN_IN') }}
+        </button>
+      </form>
+
+      <!-- Language Switch Button -->
+      <div class="text-center">
+        <button 
+          type="button" 
+          class="btn btn-outline-secondary btn-lg w-100"
+          (click)="switchLanguage()"
+          [title]="translationService.translate('SWITCH_LANGUAGE')"
+          style="color: #000000;"
+        >
+          <i class="fas fa-language me-2" style="color: #7B2E2E;"></i>
+          {{ translationService.getCurrentLanguage() === 'en' ? 'العربية' : 'English' }}
+        </button>
+      </div>
+
+      <!-- <hr class="my-4">
+
+      <div class="text-center">
+
+      </div>
+    </div> -->
+  </div>
+</div>

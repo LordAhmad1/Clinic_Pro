@@ -1,0 +1,284 @@
+<div class="reports-page fade-in">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-0 text-white">
+        <i class="fas fa-chart-bar me-2" style="color: #D6B96A;"></i>
+        {{ translationService.translate('reportsAnalytics') }}
+      </h2>
+              <p class="text-white mb-0">{{ translationService.translate('comprehensiveOverview') }}</p>
+    </div>
+    
+  </div>
+
+  <!-- Overview Statistics -->
+  <div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card dashboard-card primary">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="fw-bold mb-1 text-primary">{{ totalPatients }}</h3>
+              <p class="mb-0 text-muted">{{ translationService.translate('totalPatients') }}</p>
+              <small class="text-muted">+{{ monthlyPatients }} {{ translationService.translate('thisMonth') }}</small>
+            </div>
+            <i class="fas fa-users fa-2x text-primary opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card dashboard-card accent">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="fw-bold mb-1 text-accent">{{ totalAppointments }}</h3>
+              <p class="mb-0 text-muted">{{ translationService.translate('totalAppointments') }}</p>
+              <small class="text-muted">{{ todayAppointments }} {{ translationService.translate('today') }}</small>
+            </div>
+            <i class="fas fa-calendar-alt fa-2x text-accent opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card dashboard-card secondary">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="fw-bold mb-1 text-secondary">${{ totalRevenue | number:'1.0-0' }}</h3>
+              <p class="mb-0 text-muted">{{ translationService.translate('totalRevenue') }}</p>
+              <small class="text-muted">${{ monthlyRevenue | number:'1.0-0' }} {{ translationService.translate('thisMonth') }}</small>
+            </div>
+            <i class="fas fa-dollar-sign fa-2x text-secondary opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-3">
+      <div class="card dashboard-card light-green">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="fw-bold mb-1" style="color: var(--light-green);">{{ totalDoctors }}</h3>
+              <p class="mb-0 text-muted">{{ translationService.translate('activeDoctors') }}</p>
+              <small class="text-muted">{{ translationService.translate('allSpecializations') }}</small>
+            </div>
+            <i class="fas fa-user-md fa-2x opacity-50" style="color: var(--light-green);"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts and Analytics Row -->
+  <div class="row mb-4">
+    <!-- Appointment Status Breakdown -->
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0 fw-semibold">
+            <i class="fas fa-chart-pie me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('appointmentStatus') }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let status of ['scheduled', 'completed', 'cancelled', 'no-show']" class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="text-capitalize">{{ getStatusDisplayText(status) }}</span>
+              <span class="fw-bold">{{ appointmentsByStatus[status] || 0 }} ({{ getStatusPercentage(status, appointmentsByStatus) }}%)</span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div 
+                class="progress-bar" 
+                [class]="'bg-' + getStatusColor(status)"
+                [style.width.%]="getStatusPercentage(status, appointmentsByStatus)"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice Status Breakdown -->
+    <div class="col-lg-6 mb-4">
+      <div class="card">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0 fw-semibold">
+            <i class="fas fa-credit-card me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('paymentStatus') }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let status of ['paid', 'unpaid', 'partially-paid']" class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="d-flex align-items-center">
+                <i [class]="getPaymentStatusIcon(status)" class="me-2 fa-lg" [style.color]="getPaymentStatusIconColor(status)"></i>
+                <span class="text-capitalize">{{ getStatusDisplayText(status) }}</span>
+              </div>
+              <span class="fw-bold">{{ invoicesByStatus[status] || 0 }} ({{ getStatusPercentage(status, invoicesByStatus) }}%)</span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div 
+                class="progress-bar" 
+                [class]="'bg-' + getStatusColor(status)"
+                [style.width.%]="getStatusPercentage(status, invoicesByStatus)"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance and Activity Row -->
+  <div class="row">
+    <!-- Top Performing Doctors -->
+    <div class="col-lg-8 mb-4">
+      <div class="card">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0 fw-semibold">
+            <i class="fas fa-trophy me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('topPerformingDoctors') }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th style="color: white;">{{ translationService.translate('doctor') }}</th>
+                  <th style="color: white;">{{ translationService.translate('specialization') }}</th>
+                  <th style="color: white;">{{ translationService.translate('appointments') }}</th>
+                  <th style="color: white;">{{ translationService.translate('revenue') }}</th>
+                  <th style="color: white;">{{ translationService.translate('rating') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let doctor of topDoctors; let i = index">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="position-relative me-3">
+                        <img 
+                          [src]="doctor.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&dpr=1'" 
+                          [alt]="doctor.name"
+                          class="rounded-circle"
+                          style="width: 40px; height: 40px; object-fit: cover;"
+                        >
+                        <span 
+                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                          [class]="i === 0 ? 'bg-warning' : i === 1 ? 'bg-secondary' : 'bg-success'"
+                        >
+                          {{ i + 1 }}
+                        </span>
+                      </div>
+                      <div>
+                        <div class="fw-semibold">{{ doctor.name }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ doctor.specialization }}</td>
+                  <td>
+                    <span class="badge bg-primary">{{ doctor.appointmentsCount }}</span>
+                  </td>
+                  <td class="fw-bold text-success">${{ doctor.revenue | number:'1.0-0' }}</td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-star text-warning me-1"></i>
+                      <span>{{ doctor.rating }}</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-lg-4 mb-4">
+      <div class="card">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0 fw-semibold">
+            <i class="fas fa-clock text-info me-2"></i>
+            {{ translationService.translate('recentActivity') }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let activity of recentActivity" class="d-flex align-items-start mb-3 pb-3 border-bottom">
+            <div class="flex-shrink-0 me-3">
+              <div class="rounded-circle bg-light p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                <i [class]="activity.icon + ' ' + activity.color"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <p class="mb-1 small">{{ activity.description }}</p>
+              <small class="text-muted">{{ activity.time | date:'short' }}</small>
+            </div>
+          </div>
+          
+          <div *ngIf="recentActivity.length === 0" class="text-center text-muted py-4">
+            <i class="fas fa-history fa-2x mb-2"></i>
+            <p class="mb-0">{{ translationService.translate('noRecentActivity') }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Summary -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header bg-white border-0">
+          <h5 class="mb-0 fw-semibold">
+            <span class="text-primary me-2" style="font-size: 1.2em;">📊</span>
+            {{ translationService.translate('thisMonthSummary') }}
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-md-3 mb-3">
+              <div class="border-end">
+                <div class="d-flex align-items-center justify-content-center mb-2">
+                  <i class="fas fa-user-plus text-primary me-2 fa-lg"></i>
+                  <h4 class="fw-bold text-primary mb-0">{{ monthlyPatients }}</h4>
+                </div>
+                <p class="text-muted mb-0">{{ translationService.translate('newPatients') }}</p>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="border-end">
+                <div class="d-flex align-items-center justify-content-center mb-2">
+                  <i class="fas fa-calendar-check text-success me-2 fa-lg"></i>
+                  <h4 class="fw-bold text-success mb-0">{{ monthlyAppointments }}</h4>
+                </div>
+                <p class="text-muted mb-0">{{ translationService.translate('appointments') }}</p>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="border-end">
+                <div class="d-flex align-items-center justify-content-center mb-2">
+                  <i class="fas fa-dollar-sign text-warning me-2 fa-lg"></i>
+                  <h4 class="fw-bold text-warning mb-0">${{ monthlyRevenue | number:'1.0-0' }}</h4>
+                </div>
+                <p class="text-muted mb-0">{{ translationService.translate('revenue') }}</p>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="d-flex align-items-center justify-content-center mb-2">
+                <i class="fas fa-check-circle text-info me-2 fa-lg"></i>
+                <h4 class="fw-bold text-info mb-0">{{ (appointmentsByStatus['completed'] || 0) }}</h4>
+              </div>
+              <p class="text-muted mb-0">{{ translationService.translate('completed') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

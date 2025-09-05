@@ -1,0 +1,139 @@
+.login-container {
+  background: #4C5C45;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.1"><circle cx="5" cy="5" r="5"/></g></svg>');
+  opacity: 0.3;
+}
+
+.login-form {
+  position: relative;
+  z-index: 1;
+  max-width: 450px;
+  width: 90%;
+  border-radius: 15px;
+}
+
+.login-form .card-body {
+  border-radius: 15px;
+}
+
+.form-control {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 2px solid #000000;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.form-control:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn {
+  padding: 0.75rem;
+  border-radius: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 2px solid #000000;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-warning:hover {
+  transform: translateY(-2px);
+}
+
+/* Icon styling for login form */
+.login-form .fas {
+  color: #6c757d;
+}
+
+.login-form .fa-stethoscope {
+  color: #7B2E2E;
+}
+
+/* Ensure proper spacing */
+.login-form h2 {
+  color: #212529;
+  margin-bottom: 0.5rem;
+}
+
+.login-form .form-label {
+  color: #212529;
+  font-weight: 600;
+}
+
+.login-form hr {
+  border-color: #dee2e6;
+  margin: 2rem 0;
+}
+
+/* Original color scheme buttons */
+.login-form .btn-primary {
+  background-color: #7B2E2E;
+  border-color: #7B2E2E;
+}
+
+.login-form .btn-primary:hover {
+  background-color: #6a2727;
+  border-color: #6a2727;
+}
+
+.login-form .btn-outline-primary {
+  color: #7B2E2E;
+  border-color: #7B2E2E;
+}
+
+.login-form .btn-outline-primary:hover {
+  background-color: #7B2E2E;
+  border-color: #7B2E2E;
+}
+
+.login-form .btn-outline-success {
+  color: #4C5C45;
+  border-color: #4C5C45;
+}
+
+.login-form .btn-outline-success:hover {
+  background-color: #4C5C45;
+  border-color: #4C5C45;
+}
+
+.login-form .btn-outline-warning {
+  color: #D6B96A;
+  border-color: #D6B96A;
+}
+
+.login-form .btn-outline-warning:hover {
+  background-color: #D6B96A;
+  border-color: #D6B96A;
+  color: #212529;
+}
+
+@media (max-width: 576px) {
+  .login-form {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .login-form .card-body {
+    padding: 2rem 1.5rem !important;
+  }
+}

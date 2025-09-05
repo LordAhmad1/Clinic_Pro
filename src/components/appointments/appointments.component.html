@@ -1,0 +1,415 @@
+<div class="appointments-page fade-in" [dir]="translationService.getDirection()">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-0 text-white">
+        <i class="fas fa-calendar-alt me-2" style="color: #D6B96A;"></i>
+        {{ translationService.translate('appointmentsManagement') }}
+      </h2>
+      <p class="text-white mb-0">{{ translationService.translate('scheduleManageAppointments') }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <i class="fas fa-calendar-plus me-2" style="color: #D6B96A;"></i>
+      {{ translationService.translate('newAppointment') }}
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-search" style="color: #D6B96A;"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              [placeholder]="translationService.translate('searchAppointmentsPlaceholder')"
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+            >
+          </div>
+        </div>
+        <div class="col-md-4">
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="selectedDate"
+            (change)="onSearch()"
+          >
+        </div>
+        <div class="col-md-4 text-end">
+          <span class="text-muted">
+            {{ translationService.translate('total') }}: <strong>{{ filteredAppointments.length }}</strong>
+          </span>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appointments Table -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th style="color: white;">{{ translationService.translate('dateTime') }}</th>
+              <th style="color: white;">{{ translationService.translate('patient') }}</th>
+              <th style="color: white;">{{ translationService.translate('doctor') }}</th>
+              <th style="color: white;">{{ translationService.translate('type') }}</th>
+              <th style="color: white;">{{ translationService.translate('duration') }}</th>
+              <th style="color: white;">{{ translationService.translate('status') }}</th>
+              <th style="color: white;">{{ translationService.translate('Actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let appointment of filteredAppointments" class="align-middle">
+              <td>
+                <div class="fw-semibold">{{ appointment.date | date:'MMM d, y' }}</div>
+                <small class="text-muted">{{ appointment.time }}</small>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar bg-primary text-white me-2 d-flex align-items-center justify-content-center">
+                    {{ appointment.patient?.name?.charAt(0) || '?' }}
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ appointment.patient?.name }}</div>
+                    <small class="text-muted">{{ appointment.patient?.phone }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="fw-semibold">{{ appointment.doctor?.name }}</div>
+                <small class="text-muted">{{ appointment.doctor?.specialization }}</small>
+              </td>
+              <td>
+                <span class="badge" [class]="getTypeBadgeClass(appointment.type)">
+                  {{ getTypeDisplayText(appointment.type) }}
+                </span>
+              </td>
+              <td>{{ appointment.duration }} {{ translationService.translate('min') }}</td>
+              <td>
+                <span class="badge" [class]="getStatusBadgeClass(appointment.status)">
+                  {{ getStatusDisplayText(appointment.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    (click)="openDetailsModal(appointment)"
+                    title="View Details"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    (click)="confirmCompleteAppointment(appointment)"
+                    [title]="translationService.translate('markComplete')"
+                    *ngIf="appointment.status === 'scheduled'"
+                    style="border: 2px solid #198754; font-weight: 600;"
+                  >
+                    <i class="fas fa-check me-1"></i>
+                    {{ translationService.translate('markComplete') }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="deleteAppointment(appointment)"
+                    title="Delete"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="filteredAppointments.length === 0" class="text-center py-5">
+          <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">{{ translationService.translate('noAppointmentsFound') }}</h5>
+          <p class="text-muted">{{ translationService.translate('tryAdjustingSearchOrDate') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Appointment Modal -->
+  <div class="modal fade show d-block" *ngIf="showAddModal" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-calendar-plus me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('scheduleNewAppointment') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="addAppointment()" #appointmentForm="ngForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="patient" class="form-label">{{ translationService.translate('patient') }} *</label>
+                <div class="position-relative">
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="patientSearch"
+                    [placeholder]="translationService.translate('searchPatientsPlaceholder')"
+                    [(ngModel)]="patientSearchTerm"
+                    (input)="filterPatients()"
+                    (focus)="onPatientInputFocus()"
+                    (blur)="hidePatientDropdown()"
+                  >
+                  <div class="dropdown-menu w-100 show" *ngIf="showPatientDropdown && filteredPatients.length > 0" style="max-height: 200px; overflow-y: auto; z-index: 1050;">
+                    <div 
+                      *ngFor="let patient of filteredPatients" 
+                      class="dropdown-item cursor-pointer"
+                      (click)="selectPatient(patient)"
+                      style="cursor: pointer;"
+                    >
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%; font-size: 12px;">
+                          {{ patient.name.charAt(0) }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ patient.name }}</div>
+                          <small class="text-muted">{{ patient.phone }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="selectedPatient" class="mt-2">
+                  <span class="badge bg-primary">
+                    <i class="fas fa-user me-1"></i>
+                    {{ selectedPatient.name }} - {{ selectedPatient.phone }}
+                  </span>
+                </div>
+                <div class="mt-2">
+                  <small class="text-muted">
+                    Available patients: {{ patients.length }} | Filtered: {{ filteredPatients.length }}
+                  </small>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="doctor" class="form-label">{{ translationService.translate('doctor') }} *</label>
+                <div class="position-relative">
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="doctorSearch"
+                    [placeholder]="translationService.translate('searchDoctorsPlaceholder')"
+                    [(ngModel)]="doctorSearchTerm"
+                    (input)="filterDoctors()"
+                    (focus)="onDoctorInputFocus()"
+                    (blur)="hideDoctorDropdown()"
+                  >
+                  <div class="dropdown-menu w-100 show" *ngIf="showDoctorDropdown && filteredDoctors.length > 0" style="max-height: 200px; overflow-y: auto; z-index: 1050;">
+                    <div 
+                      *ngFor="let doctor of filteredDoctors" 
+                      class="dropdown-item cursor-pointer"
+                      (click)="selectDoctor(doctor)"
+                      style="cursor: pointer;"
+                    >
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-secondary text-white me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%; font-size: 12px;">
+                          {{ doctor.name.charAt(0) }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ doctor.name }}</div>
+                          <small class="text-muted">{{ doctor.specialization }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="selectedDoctor" class="mt-2">
+                  <span class="badge bg-secondary">
+                    <i class="fas fa-user-md me-1"></i>
+                    {{ selectedDoctor.name }} - {{ selectedDoctor.specialization }}
+                  </span>
+                </div>
+                <div class="mt-2">
+                  <small class="text-muted">
+                    Available doctors: {{ doctors.length }} | Filtered: {{ filteredDoctors.length }}
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="date" class="form-label">{{ translationService.translate('date') }} *</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="date"
+                  [(ngModel)]="newAppointment.date"
+                  name="date"
+                  required
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="time" class="form-label">{{ translationService.translate('time') }} *</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="time"
+                  [(ngModel)]="newAppointment.time"
+                  name="time"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="type" class="form-label">{{ translationService.translate('type') }}</label>
+                <select
+                  class="form-select"
+                  id="type"
+                  [(ngModel)]="newAppointment.type"
+                  name="type"
+                >
+                  <option *ngFor="let type of appointmentTypes" [value]="type">
+                    {{ getTypeDisplayText(type) }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="duration" class="form-label">{{ translationService.translate('duration') }} ({{ translationService.translate('minutes') }})</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="duration"
+                  [(ngModel)]="newAppointment.duration"
+                  name="duration"
+                  min="15"
+                  max="120"
+                  step="15"
+                >
+              </div>
+              <div class="col-md-4 mb-3">
+                <label for="status" class="form-label">{{ translationService.translate('status') }}</label>
+                <select
+                  class="form-select"
+                  id="status"
+                  [(ngModel)]="newAppointment.status"
+                  name="status"
+                >
+                  <option *ngFor="let status of appointmentStatuses" [value]="status">
+                    {{ getStatusDisplayText(status) }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="notes" class="form-label">{{ translationService.translate('notes') }}</label>
+              <textarea
+                class="form-control"
+                id="notes"
+                rows="3"
+                [(ngModel)]="newAppointment.notes"
+                name="notes"
+                [placeholder]="translationService.translate('additionalNotes')"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">
+            {{ translationService.translate('cancel') }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="addAppointment()">
+            <i class="fas fa-save me-2"></i>
+            {{ translationService.translate('scheduleAppointment') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appointment Details Modal -->
+  <div class="modal fade show d-block" *ngIf="showDetailsModal && selectedAppointment" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-calendar-alt me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('appointmentDetails') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDetailsModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="fw-bold mb-3">{{ translationService.translate('patientInformation') }}</h6>
+              <p><strong>{{ translationService.translate('name') }}:</strong> {{ selectedAppointment.patient?.name }}</p>
+              <p><strong>{{ translationService.translate('phone') }}:</strong> {{ selectedAppointment.patient?.phone }}</p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="fw-bold mb-3">{{ translationService.translate('doctorInformation') }}</h6>
+              <p><strong>{{ translationService.translate('name') }}:</strong> {{ selectedAppointment.doctor?.name }}</p>
+              <p><strong>{{ translationService.translate('specialization') }}:</strong> {{ selectedAppointment.doctor?.specialization }}</p>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="fw-bold mb-3">{{ translationService.translate('appointmentDetails') }}</h6>
+              <p><strong>{{ translationService.translate('date') }}:</strong> {{ selectedAppointment.date | date:'fullDate' }}</p>
+              <p><strong>{{ translationService.translate('time') }}:</strong> {{ selectedAppointment.time }}</p>
+              <p><strong>{{ translationService.translate('duration') }}:</strong> {{ selectedAppointment.duration }} {{ translationService.translate('minutes') }}</p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="fw-bold mb-3">{{ translationService.translate('statusAndType') }}</h6>
+              <p>
+                <strong>{{ translationService.translate('status') }}:</strong> 
+                <span class="badge ms-2" [class]="getStatusBadgeClass(selectedAppointment.status)">
+                  {{ getStatusDisplayText(selectedAppointment.status) }}
+                </span>
+              </p>
+              <p>
+                <strong>{{ translationService.translate('type') }}:</strong> 
+                <span class="badge ms-2" [class]="getTypeBadgeClass(selectedAppointment.type)">
+                  {{ getTypeDisplayText(selectedAppointment.type) }}
+                </span>
+              </p>
+            </div>
+          </div>
+          
+          <div *ngIf="selectedAppointment.notes" class="mt-3">
+            <h6 class="fw-bold mb-2">{{ translationService.translate('notes') }}</h6>
+            <p class="text-muted">{{ selectedAppointment.notes }}</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">
+            {{ translationService.translate('close') }}
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-success"
+            (click)="updateAppointmentStatus(selectedAppointment, 'completed')"
+            *ngIf="selectedAppointment.status === 'scheduled'"
+          >
+            <i class="fas fa-check me-2"></i>
+            {{ translationService.translate('markComplete') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

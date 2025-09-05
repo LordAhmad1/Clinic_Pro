@@ -1,0 +1,728 @@
+<div class="admin-page fade-in" *ngIf="isManager()">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-0 text-white">
+        <i class="fas fa-cogs me-2" style="color: #D6B96A;"></i>
+        {{ translationService.translate('adminPanel') }}
+      </h2>
+              <p class="text-white mb-0">{{ translationService.translate('manageInvoicesPayments') }}</p>
+    </div>
+  </div>
+
+
+
+  <!-- Navigation Tabs -->
+  <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button 
+        class="nav-link" 
+        [class.active]="activeTab === 'specializations'"
+        (click)="setActiveTab('specializations')"
+        type="button"
+        role="tab"
+      >
+        <i class="fas fa-stethoscope me-2" style="color: #D6B96A;"></i>
+        {{ translationService.translate('specializations') }}
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button 
+        class="nav-link" 
+        [class.active]="activeTab === 'users'"
+        (click)="setActiveTab('users')"
+        type="button"
+        role="tab"
+      >
+        <i class="fas fa-users me-2" style="color: #D6B96A;"></i>
+        {{ translationService.translate('userManagement') }}
+      </button>
+    </li>
+
+  </ul>
+
+  <!-- Tab Content -->
+  <div class="tab-content" id="adminTabContent">
+    <!-- Specializations Tab -->
+    <div *ngIf="activeTab === 'specializations'" class="tab-pane fade show active">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">{{ translationService.translate('medicalSpecializations') }}</h5>
+        <button class="btn btn-primary" (click)="openAddModal()">
+          <i class="fas fa-plus me-2" style="color: #D6B96A;"></i>
+          {{ translationService.translate('addSpecialization') }}
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th style="color: white;">{{ translationService.translate('id') }}</th>
+                  <th style="color: white;">{{ translationService.translate('specializationName') }}</th>
+                  <th style="color: white;">{{ translationService.translate('description') }}</th>
+                  <th style="color: white;">{{ translationService.translate('createdDate') }}</th>
+                  <th style="color: white;">{{ translationService.translate('Actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let specialization of specializations" class="align-middle">
+                  <td>
+                    <span class="badge bg-secondary">{{ specialization.id }}</span>
+                  </td>
+                  <td>
+                    <div class="fw-semibold">{{ specialization.name }}</div>
+                  </td>
+                  <td>
+                    <span class="text-muted">{{ specialization.description || translationService.translate('noDescription') }}</span>
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ specialization.createdAt | date:'MMM d, y' }}</small>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="openEditModal(specialization)"
+                        [title]="translationService.translate('editSpecialization')"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        (click)="deleteSpecialization(specialization)"
+                        [title]="translationService.translate('deleteSpecialization')"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div *ngIf="specializations.length === 0" class="text-center py-5">
+              <i class="fas fa-stethoscope fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">{{ translationService.translate('noSpecializationsFound') }}</h5>
+              <p class="text-muted">{{ translationService.translate('addFirstSpecialization') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Tab -->
+    <div *ngIf="activeTab === 'users'" class="tab-pane fade show active">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">{{ translationService.translate('userManagementTitle') }}</h5>
+        <button class="btn btn-primary" (click)="openAddUserModal()">
+          <i class="fas fa-user-plus me-2" style="color: #D6B96A;"></i>
+          {{ translationService.translate('addUser') }}
+        </button>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th style="color: white;">{{ translationService.translate('id') }}</th>
+                  <th style="color: white;">{{ translationService.translate('name') }}</th>
+                  <th style="color: white;">{{ translationService.translate('email') }}</th>
+                  <th style="color: white;">{{ translationService.translate('NATIONAL_ID') }}</th>
+                  <th style="color: white;">{{ translationService.translate('role') }}</th>
+                  <th style="color: white;">{{ translationService.translate('specialization') }}</th>
+                  <th style="color: white;">{{ translationService.translate('status') }}</th>
+                  <th style="color: white;">{{ translationService.translate('created') }}</th>
+                  <th style="color: white;">{{ translationService.translate('Actions') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of users" class="align-middle">
+                  <td>
+                    <span class="badge bg-secondary">{{ user.id }}</span>
+                  </td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <img 
+                        [src]="getUserPhoto(user)" 
+                        [alt]="user.name"
+                        class="rounded-circle me-2"
+                        style="width: 32px; height: 32px; object-fit: cover;"
+                      >
+                      <div class="fw-semibold">{{ user.name }}</div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="text-muted">{{ user.email }}</span>
+                  </td>
+                  <td>
+                    <span class="badge bg-primary">{{ user.nationalId || '-' }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="getRoleBadgeClass(user.role)">
+                      {{ translationService.translate('role' + user.role.charAt(0).toUpperCase() + user.role.slice(1)) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-muted">{{ user.specialization || '-' }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [class]="user.isActive ? 'bg-success' : 'bg-danger'">
+                      {{ user.isActive ? translationService.translate('active') : translationService.translate('inactive') }}
+                    </span>
+                  </td>
+                  <td>
+                    <small class="text-muted">{{ user.createdAt | date:'MMM d, y' }}</small>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <button
+                        type="button"
+                        class="btn btn-outline-primary btn-sm"
+                        (click)="openEditUserModal(user)"
+                        [title]="translationService.translate('editUser')"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-warning btn-sm"
+                        (click)="toggleUserStatus(user)"
+                        [title]="user.isActive ? translationService.translate('deactivateUser') : translationService.translate('activateUser')"
+                      >
+                        <i class="fas" [class]="user.isActive ? 'fa-user-slash' : 'fa-user-check'"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-danger btn-sm"
+                        (click)="deleteUser(user)"
+                        [title]="translationService.translate('deleteUser')"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div *ngIf="users.length === 0" class="text-center py-5">
+              <i class="fas fa-users fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">{{ translationService.translate('noUsersFound') }}</h5>
+              <p class="text-muted">{{ translationService.translate('addFirstUser') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+      
+  </div>
+</div>
+
+  <!-- Add Specialization Modal -->
+  <div class="modal fade show d-block" *ngIf="showAddModal" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-plus me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('addNewSpecialization') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="addSpecialization()" #addForm="ngForm">
+            <div class="mb-3">
+              <label for="name" class="form-label">{{ translationService.translate('specializationName') }} *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                [(ngModel)]="newSpecialization.name"
+                name="name"
+                required
+                [placeholder]="translationService.translate('specializationNamePlaceholder')"
+              >
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">{{ translationService.translate('description') }}</label>
+              <textarea
+                class="form-control"
+                id="description"
+                rows="3"
+                [(ngModel)]="newSpecialization.description"
+                name="description"
+                [placeholder]="translationService.translate('descriptionPlaceholder')"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">
+            {{ translationService.translate('cancel') }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="addSpecialization()">
+            <i class="fas fa-save me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('addSpecializationButton') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Specialization Modal -->
+  <div class="modal fade show d-block" *ngIf="showEditModal && editingSpecialization" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-edit me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('editSpecializationModal') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="updateSpecialization()" #editForm="ngForm">
+            <div class="mb-3">
+              <label for="editName" class="form-label">{{ translationService.translate('specializationName') }} *</label>
+              <input
+                type="text"
+                class="form-control"
+                id="editName"
+                [(ngModel)]="editingSpecialization.name"
+                name="editName"
+                required
+                [placeholder]="translationService.translate('specializationNamePlaceholder')"
+              >
+            </div>
+            <div class="mb-3">
+              <label for="editDescription" class="form-label">{{ translationService.translate('description') }}</label>
+              <textarea
+                class="form-control"
+                id="editDescription"
+                rows="3"
+                [(ngModel)]="editingSpecialization.description"
+                name="editDescription"
+                [placeholder]="translationService.translate('descriptionPlaceholder')"
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            {{ translationService.translate('cancel') }}
+          </button>
+          <button type="button" class="btn btn-warning" (click)="updateSpecialization()">
+            <i class="fas fa-save me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('updateSpecialization') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add User Modal -->
+  <div class="modal fade show d-block" *ngIf="showAddUserModal" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-user-plus me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('addNewUser') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAddUserModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="addUser()" #addUserForm="ngForm">
+            <!-- Photo Upload Section -->
+            <div class="row mb-4">
+              <div class="col-12 text-center">
+                <div class="photo-upload">
+                  <div class="photo-preview mx-auto">
+                    <img *ngIf="newUser.avatar" [src]="newUser.avatar" [alt]="newUser.name">
+                    <span *ngIf="!newUser.avatar">{{ getUserInitials(newUser) || 'U' }}</span>
+                  </div>
+                  <div class="photo-upload-overlay">
+                    <i class="fas fa-camera" style="color: #D6B96A;"></i>
+                  </div>
+                  <input type="file" accept="image/*" (change)="onPhotoUpload($event, false)">
+                </div>
+                <p class="text-muted mt-2">{{ translationService.translate('clickToUploadUserPhoto') }}</p>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="userName" class="form-label">{{ translationService.translate('fullName') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="userName"
+                  [(ngModel)]="newUser.name"
+                  name="userName"
+                  required
+                  [placeholder]="translationService.translate('fullNamePlaceholder')"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="userEmail" class="form-label">{{ translationService.translate('email') }} *</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="userEmail"
+                  [(ngModel)]="newUser.email"
+                  name="userEmail"
+                  required
+                  [placeholder]="translationService.translate('emailPlaceholder')"
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="userNationalId" class="form-label">{{ translationService.translate('NATIONAL_ID') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="userNationalId"
+                  [(ngModel)]="newUser.nationalId"
+                  name="userNationalId"
+                  required
+                  minlength="8"
+                  maxlength="13"
+                  [placeholder]="translationService.translate('nationalIdPlaceholder')"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="userPassword" class="form-label">{{ translationService.translate('password') }} *</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="userPassword"
+                  [(ngModel)]="newUser.password"
+                  name="userPassword"
+                  required
+                  [placeholder]="translationService.translate('passwordPlaceholder')"
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="userRole" class="form-label">{{ translationService.translate('role') }} *</label>
+                <select
+                  class="form-select"
+                  id="userRole"
+                  [(ngModel)]="newUser.role"
+                  name="userRole"
+                  required
+                >
+                  <option value="doctor">{{ translationService.translate('roleDoctor') }}</option>
+                  <option value="secretary">{{ translationService.translate('roleSecretary') }}</option>
+                  <option value="manager">{{ translationService.translate('roleManager') }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row" *ngIf="newUser.role === 'doctor'">
+              <div class="col-md-6 mb-3">
+                <label for="userSpecialization" class="form-label">{{ translationService.translate('specialization') }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="userSpecialization"
+                  [(ngModel)]="newUser.specialization"
+                  name="userSpecialization"
+                  [placeholder]="translationService.translate('specializationPlaceholder')"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="userPhone" class="form-label">{{ translationService.translate('phone') }}</label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="userPhone"
+                  [(ngModel)]="newUser.phone"
+                  name="userPhone"
+                  [placeholder]="translationService.translate('phonePlaceholder')"
+                >
+              </div>
+            </div>
+
+            <div class="row" *ngIf="newUser.role === 'doctor'">
+              <div class="col-md-6 mb-3">
+                <label for="userStartTime" class="form-label">{{ translationService.translate('startTime') }}</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="userStartTime"
+                  [(ngModel)]="newUser.workingHours!.start"
+                  name="userStartTime"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="userEndTime" class="form-label">{{ translationService.translate('endTime') }}</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="userEndTime"
+                  [(ngModel)]="newUser.workingHours!.end"
+                  name="userEndTime"
+                >
+              </div>
+            </div>
+
+            <div class="mb-3" *ngIf="newUser.role === 'doctor'">
+              <label class="form-label">{{ translationService.translate('workingDays') }}</label>
+              <div class="row">
+                <div class="col-md-4 col-6" *ngFor="let day of weekDays">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      [id]="'user-day-' + day"
+                      [checked]="isDaySelected(day, false)"
+                      (change)="onWorkingDayChange(day, $event, false)"
+                    >
+                    <label class="form-check-label" [for]="'user-day-' + day">
+                      {{ translationService.translate(day.toUpperCase()) }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddUserModal()">
+            {{ translationService.translate('cancel') }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="addUser()">
+            <i class="fas fa-save me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('addUserButton') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal fade show d-block" *ngIf="showEditUserModal && editingUser" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-user-edit me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('editUserModal') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeEditUserModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="updateUser()" #editUserForm="ngForm">
+            <!-- Photo Upload Section -->
+            <div class="row mb-4">
+              <div class="col-12 text-center">
+                <div class="photo-upload">
+                  <div class="photo-preview mx-auto">
+                    <img *ngIf="editingUser.avatar" [src]="editingUser.avatar" [alt]="editingUser.name">
+                    <span *ngIf="!editingUser.avatar">{{ getUserInitials(editingUser) || 'U' }}</span>
+                  </div>
+                  <div class="photo-upload-overlay">
+                    <i class="fas fa-camera" style="color: #D6B96A;"></i>
+                  </div>
+                  <input type="file" accept="image/*" (change)="onPhotoUpload($event, true)">
+                </div>
+                <p class="text-muted mt-2">{{ translationService.translate('clickToChangeUserPhoto') }}</p>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editUserName" class="form-label">{{ translationService.translate('fullName') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editUserName"
+                  [(ngModel)]="editingUser.name"
+                  name="editUserName"
+                  required
+                  [placeholder]="translationService.translate('fullNamePlaceholder')"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editUserEmail" class="form-label">{{ translationService.translate('email') }} *</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="editUserEmail"
+                  [(ngModel)]="editingUser.email"
+                  name="editUserEmail"
+                  required
+                  [placeholder]="translationService.translate('emailPlaceholder')"
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editUserNationalId" class="form-label">{{ translationService.translate('NATIONAL_ID') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editUserNationalId"
+                  [(ngModel)]="editingUser.nationalId"
+                  name="editUserNationalId"
+                  required
+                  minlength="8"
+                  maxlength="13"
+                  [placeholder]="translationService.translate('nationalIdPlaceholder')"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editUserRole" class="form-label">{{ translationService.translate('role') }} *</label>
+                <select
+                  class="form-select"
+                  id="editUserRole"
+                  [(ngModel)]="editingUser.role"
+                  name="editUserRole"
+                  required
+                >
+                  <option value="doctor">{{ translationService.translate('roleDoctor') }}</option>
+                  <option value="secretary">{{ translationService.translate('roleSecretary') }}</option>
+                  <option value="manager">{{ translationService.translate('roleManager') }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editUserStatus" class="form-label">{{ translationService.translate('status') }}</label>
+                <select
+                  class="form-select"
+                  id="editUserStatus"
+                  [(ngModel)]="editingUser.isActive"
+                  name="editUserStatus"
+                >
+                  <option [value]="true">{{ translationService.translate('active') }}</option>
+                  <option [value]="false">{{ translationService.translate('inactive') }}</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editUserPassword" class="form-label">{{ translationService.translate('newPassword') }}</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="editUserPassword"
+                  [(ngModel)]="editingUser.newPassword"
+                  name="editUserPassword"
+                  [placeholder]="translationService.translate('leaveEmptyToKeepCurrent')"
+                >
+                <small class="text-muted">{{ translationService.translate('passwordChangeNote') }}</small>
+              </div>
+            </div>
+
+            <div class="row" *ngIf="editingUser.role === 'doctor'">
+              <div class="col-md-6 mb-3">
+                <label for="editUserSpecialization" class="form-label">{{ translationService.translate('specialization') }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editUserSpecialization"
+                  [(ngModel)]="editingUser.specialization"
+                  name="editUserSpecialization"
+                  [placeholder]="translationService.translate('specializationPlaceholder')"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editUserPhone" class="form-label">{{ translationService.translate('phone') }}</label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="editUserPhone"
+                  [(ngModel)]="editingUser.phone"
+                  name="editUserPhone"
+                  [placeholder]="translationService.translate('phonePlaceholder')"
+                >
+              </div>
+            </div>
+
+            <div class="row" *ngIf="editingUser.role === 'doctor'">
+              <div class="col-md-6 mb-3">
+                <label for="editUserStartTime" class="form-label">{{ translationService.translate('startTime') }}</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="editUserStartTime"
+                  [(ngModel)]="editingUser.workingHours!.start"
+                  name="editUserStartTime"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editUserEndTime" class="form-label">{{ translationService.translate('endTime') }}</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="editUserEndTime"
+                  [(ngModel)]="editingUser.workingHours!.end"
+                  name="editUserEndTime"
+                >
+              </div>
+            </div>
+
+            <div class="mb-3" *ngIf="editingUser.role === 'doctor'">
+              <label class="form-label">{{ translationService.translate('workingDays') }}</label>
+              <div class="row">
+                <div class="col-md-4 col-6" *ngFor="let day of weekDays">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      [id]="'edit-user-day-' + day"
+                      [checked]="isDaySelected(day, true)"
+                      (change)="onWorkingDayChange(day, $event, true)"
+                    >
+                    <label class="form-check-label" [for]="'edit-user-day-' + day">
+                      {{ translationService.translate(day.toUpperCase()) }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditUserModal()">
+            {{ translationService.translate('cancel') }}
+          </button>
+          <button type="button" class="btn btn-warning" (click)="updateUser()">
+            <i class="fas fa-save me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('updateUser') }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+<!-- Access Denied Message -->
+<div class="access-denied fade-in" *ngIf="!isManager()">
+  <div class="text-center py-5">
+    <i class="fas fa-lock fa-3x text-muted mb-3"></i>
+    <h3 class="text-muted">{{ translationService.translate('accessDenied') }}</h3>
+    <p class="text-muted">{{ translationService.translate('onlyManagersAccess') }}</p>
+    <button class="btn btn-primary" routerLink="/dashboard">
+      <i class="fas fa-arrow-left me-2"></i>
+      {{ translationService.translate('backToDashboard') }}
+    </button>
+  </div>
+</div> 

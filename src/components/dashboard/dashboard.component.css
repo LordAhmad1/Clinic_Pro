@@ -1,0 +1,106 @@
+/* Dashboard Component Styles with New Color Scheme */
+.dashboard-card {
+  transition: all 0.3s ease;
+  border: none;
+  border-radius: 15px;
+  overflow: hidden;
+  background: linear-gradient(135deg, white, var(--bg-light));
+  border-left: 4px solid var(--secondary-color);
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-card.primary {
+  border-left-color: var(--primary-color);
+}
+
+.dashboard-card.secondary {
+  border-left-color: var(--secondary-color);
+}
+
+.dashboard-card.accent {
+  border-left-color: var(--accent-color);
+}
+
+.dashboard-card.light-green {
+  border-left-color: var(--light-green);
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.card {
+  transition: all 0.3s ease;
+  border: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--dark-red));
+  color: white;
+  border-radius: 12px 12px 0 0 !important;
+  border: none;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.border-bottom:last-child {
+  border-bottom: none !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-warning:hover,
+.btn-outline-info:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+/* Status badge colors */
+.badge.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.badge.bg-success {
+  background-color: var(--accent-color) !important;
+}
+
+.badge.bg-secondary {
+  background-color: var(--secondary-color) !important;
+  color: var(--text-dark) !important;
+}
+
+@media (max-width: 768px) {
+  .dashboard-card .card-body {
+    padding: 1rem;
+  }
+  
+  .dashboard-card h3 {
+    font-size: 1.5rem;
+  }
+  
+  .dashboard-card .fa-2x {
+    font-size: 1.5rem;
+  }
+}

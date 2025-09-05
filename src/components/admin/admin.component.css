@@ -1,0 +1,126 @@
+.admin-page {
+  padding: 20px;
+}
+
+.access-denied {
+  padding: 20px;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.access-denied .fas {
+  color: var(--secondary-color);
+}
+
+/* Admin specific card styling */
+.admin-page .card {
+  border: 3px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+  background: var(--light-gray);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--modern-shadow);
+}
+
+.admin-page .card-header {
+  background: linear-gradient(135deg, var(--primary-color), var(--dark-red));
+  border-bottom: 3px solid var(--border-color);
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  color: white;
+  font-weight: 600;
+}
+
+/* Table styling for admin */
+.admin-page .table th {
+  background: var(--primary-color);
+  color: white !important;
+  font-weight: 600;
+  border: 2px solid var(--border-color);
+}
+
+.admin-page .table td {
+  border: 2px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.admin-page .table tbody tr:hover {
+  background: rgba(214, 185, 106, 0.1);
+  transform: translateY(-2px);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Badge styling */
+.admin-page .badge {
+  font-size: 0.8rem;
+  padding: 6px 12px;
+  border-radius: var(--border-radius);
+  border: 2px solid var(--border-color);
+}
+
+/* Button group styling */
+.admin-page .btn-group .btn {
+  border: 2px solid var(--border-color);
+  margin: 0 2px;
+  transition: all 0.3s ease;
+}
+
+.admin-page .btn-group .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Modal styling for admin */
+.admin-page .modal-content {
+  border: 3px solid var(--border-color);
+  border-radius: var(--border-radius-lg);
+}
+
+.admin-page .modal-header {
+  border-bottom: 3px solid var(--border-color);
+}
+
+.admin-page .modal-footer {
+  border-top: 3px solid var(--border-color);
+}
+
+/* Form styling for admin */
+.admin-page .form-control,
+.admin-page .form-select {
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--light-gray);
+  transition: all 0.3s ease;
+}
+
+.admin-page .form-control:focus,
+.admin-page .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(123, 46, 46, 0.25);
+  transform: translateY(-2px);
+}
+
+.admin-page .form-label {
+  color: var(--dark-gray);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .admin-page {
+    padding: 10px;
+  }
+  
+  .admin-page .table-responsive {
+    font-size: 0.9rem;
+  }
+  
+  .admin-page .btn-group .btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+} 

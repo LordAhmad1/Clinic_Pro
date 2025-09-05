@@ -1,0 +1,677 @@
+<div class="patients-page fade-in" [dir]="translationService.getDirection()">
+  
+ 
+  
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-0 text-white">
+        <i class="fas fa-users me-2" style="color: #D6B96A;"></i>
+        {{ translationService.translate('patientsManagement') }}
+      </h2>
+      <p class="text-white mb-0">{{ translationService.translate('managePatientRecords') }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <i class="fas fa-user-plus me-2" style="color: #D6B96A;"></i>
+      {{ translationService.translate('addPatient') }}
+    </button>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-search" style="color: #D6B96A;"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              [placeholder]="translationService.translate('searchPatientsPlaceholder')"
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+            >
+          </div>
+        </div>
+        <div class="col-md-6 text-end">
+          <span class="text-muted">
+            {{ translationService.translate('totalPatients') }}: <strong>{{ filteredPatients.length }}</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patients Table -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>{{ translationService.translate('photo') }}</th>
+              <th>{{ translationService.translate('NATIONAL_ID') }}</th>
+              <th>{{ translationService.translate('name') }}</th>
+              <th>{{ translationService.translate('phone') }}</th>
+              <th>{{ translationService.translate('age') }}</th>
+              <th>{{ translationService.translate('gender') }}</th>
+              <th>{{ translationService.translate('address') }}</th>
+              <th>{{ translationService.translate('Actions') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let patient of filteredPatients" class="align-middle">
+              <td>
+                <div class="photo-upload">
+                                  <div class="photo-preview" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                  <img *ngIf="getPatientPhoto(patient) && getPatientPhoto(patient).startsWith('data:image')" [src]="getPatientPhoto(patient)" [alt]="patient.name">
+                  <span *ngIf="!getPatientPhoto(patient) || !getPatientPhoto(patient).startsWith('data:image')">{{ getPatientInitials(patient) }}</span>
+                </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-primary">{{ patient.nationalId }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar bg-primary text-white me-2 d-flex align-items-center justify-content-center">
+                    {{ patient.name.charAt(0) }}
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ patient.name }}</div>
+                    <small class="text-muted" *ngIf="patient.email">{{ patient.email }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>{{ patient.phone }}</td>
+              <td>{{ getAge(patient.dateOfBirth) }} {{ translationService.translate('years') }}</td>
+              <td>
+                                  <span class="badge" [class]="patient.gender === 'male' ? 'bg-info' : 'bg-pink'">
+                    <i [class]="patient.gender === 'male' ? 'fas fa-mars' : 'fas fa-venus'" style="color: #D6B96A;"></i>
+                    {{ translationService.getGenderText(patient.gender) }}
+                  </span>
+              </td>
+              <td>
+                <small>{{ patient.address }}</small>
+              </td>
+              <td>
+                <div class="btn-group" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-outline-success btn-sm"
+                    (click)="viewPatient(patient)"
+                    [title]="translationService.translate('viewPatient')"
+                  >
+                    <i class="fas fa-user"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    (click)="openDetailsModal(patient)"
+                    [title]="translationService.translate('viewDetails')"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-warning btn-sm"
+                    (click)="openEditModal(patient)"
+                    [title]="translationService.translate('edit')"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="deletePatient(patient)"
+                    [title]="translationService.translate('delete')"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="filteredPatients.length === 0" class="text-center py-5">
+          <i class="fas fa-user-slash fa-3x mb-3" style="color: #D6B96A;"></i>
+          <h5 class="text-muted">{{ translationService.translate('noPatientsFound') }}</h5>
+          <p class="text-muted">{{ translationService.translate('tryAdjustingSearch') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Patient Modal -->
+  <div class="modal fade show d-block" *ngIf="showAddModal" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-user-plus me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('addNewPatient') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+                      <form (ngSubmit)="addPatient()" #patientForm="ngForm" novalidate>
+            <!-- Photo Upload Section -->
+            <div class="row mb-4">
+              <div class="col-12 text-center">
+                <div class="photo-upload">
+                  <div class="photo-preview mx-auto">
+                    <img *ngIf="newPatient.photo && newPatient.photo.startsWith('data:image')" [src]="newPatient.photo" [alt]="newPatient.name">
+                    <span *ngIf="!newPatient.photo || !newPatient.photo.startsWith('data:image')">{{ getPatientInitials(newPatient) || 'P' }}</span>
+                  </div>
+                  <div class="photo-upload-overlay">
+                    <i class="fas fa-camera" style="color: #D6B96A;"></i>
+                  </div>
+                  <input type="file" accept="image/*" (change)="onPhotoUpload($event)">
+                </div>
+                <p class="text-muted mt-2">{{ translationService.translate('clickToUploadPatientPhoto') }}</p>
+                                  
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="name" class="form-label">{{ translationService.translate('fullName') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  [(ngModel)]="newPatient.name"
+                  name="name"
+                  required
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="phone" class="form-label">{{ translationService.translate('phoneNumber') }} *</label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="phone"
+                  [(ngModel)]="newPatient.phone"
+                  name="phone"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="email" class="form-label">{{ translationService.translate('email') }}</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  [(ngModel)]="newPatient.email"
+                  name="email"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="nationalId" class="form-label">{{ translationService.translate('NATIONAL_ID') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nationalId"
+                  [(ngModel)]="newPatient.nationalId"
+                  name="nationalId"
+                  minlength="8"
+                  maxlength="13"
+                  placeholder="12345678"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="dateOfBirth" class="form-label">{{ translationService.translate('dateOfBirth') }}</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="dateOfBirth"
+                  [(ngModel)]="newPatient.dateOfBirth"
+                  name="dateOfBirth"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="gender" class="form-label">{{ translationService.translate('gender') }}</label>
+                <select
+                  class="form-select"
+                  id="gender"
+                  [(ngModel)]="newPatient.gender"
+                  name="gender"
+                >
+                  <option value="male">{{ translationService.translate('male') }}</option>
+                  <option value="female">{{ translationService.translate('female') }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="occupation" class="form-label">{{ translationService.translate('occupation') }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="occupation"
+                  [(ngModel)]="newPatient.occupation"
+                  name="occupation"
+                  placeholder="مثل: مهندس، طبيب، معلم"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="maritalStatus" class="form-label">{{ translationService.translate('maritalStatus') }}</label>
+                <select
+                  class="form-select"
+                  id="maritalStatus"
+                  [(ngModel)]="newPatient.maritalStatus"
+                  name="maritalStatus"
+                >
+                  <option value="">{{ translationService.translate('selectOption') }}</option>
+                  <option value="single">{{ translationService.translate('single') }}</option>
+                  <option value="married">{{ translationService.translate('married') }}</option>
+                  <option value="divorced">{{ translationService.translate('divorced') }}</option>
+                  <option value="widowed">{{ translationService.translate('widowed') }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="bloodType" class="form-label">{{ translationService.translate('bloodType') }}</label>
+                <select
+                  class="form-select"
+                  id="bloodType"
+                  [(ngModel)]="newPatient.bloodType"
+                  name="bloodType"
+                >
+                  <option value="">{{ translationService.translate('selectOption') }}</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="insuranceProvider" class="form-label">{{ translationService.translate('insuranceProvider') }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="insuranceProvider"
+                  [(ngModel)]="newPatient.insuranceProvider"
+                  name="insuranceProvider"
+                  placeholder="مثل: شركة التأمين الوطنية"
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="insuranceNumber" class="form-label">{{ translationService.translate('insuranceNumber') }}</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="insuranceNumber"
+                  [(ngModel)]="newPatient.insuranceNumber"
+                  name="insuranceNumber"
+                  placeholder="رقم التأمين"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <!-- Empty column for layout balance -->
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="allergies" class="form-label">{{ translationService.translate('allergies') }}</label>
+              <textarea
+                class="form-control"
+                id="allergies"
+                rows="2"
+                [(ngModel)]="newPatient.allergies"
+                name="allergies"
+                placeholder="مثل: حساسية من البنسلين، حساسية من الغبار"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="address" class="form-label">{{ translationService.translate('address') }} *</label>
+              <textarea
+                class="form-control"
+                id="address"
+                rows="3"
+                [(ngModel)]="newPatient.address"
+                name="address"
+                required
+              ></textarea>
+            </div>
+
+            <!-- Emergency Contact Section -->
+            <div class="card mt-4">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">
+                  <i class="fas fa-phone-alt me-2" style="color: #D6B96A;"></i>
+                  {{ translationService.translate('emergencyContact') }}
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label for="emergencyName" class="form-label">{{ translationService.translate('contactName') }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="emergencyName"
+                      [(ngModel)]="newPatient.emergencyContact!.name"
+                      name="emergencyName"
+                    >
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="emergencyPhone" class="form-label">{{ translationService.translate('contactPhone') }}</label>
+                    <input
+                      type="tel"
+                      class="form-control"
+                      id="emergencyPhone"
+                      [(ngModel)]="newPatient.emergencyContact!.phone"
+                      name="emergencyPhone"
+                    >
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="emergencyRelationship" class="form-label">{{ translationService.translate('relationship') }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="emergencyRelationship"
+                      [(ngModel)]="newPatient.emergencyContact!.relationship"
+                      name="emergencyRelationship"
+                      [placeholder]="translationService.translate('relationshipPlaceholder')"
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeAddModal()">
+                {{ translationService.translate('cancel') }}
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>
+                {{ translationService.translate('SAVE_PATIENT') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Patient Modal -->
+  <div class="modal fade show d-block" *ngIf="showEditModal && editingPatient" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-user-edit me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('editPatient') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+                      <form (ngSubmit)="updatePatient()" #editForm="ngForm" novalidate>
+            <!-- Photo Upload Section -->
+            <div class="row mb-4">
+              <div class="col-12 text-center">
+                <div class="photo-upload">
+                  <div class="photo-preview mx-auto">
+                    <img *ngIf="editingPatient.photo && editingPatient.photo.startsWith('data:image')" [src]="editingPatient.photo" [alt]="editingPatient.name">
+                    <span *ngIf="!editingPatient.photo || !editingPatient.photo.startsWith('data:image')">{{ getPatientInitials(editingPatient) }}</span>
+                  </div>
+                  <div class="photo-upload-overlay">
+                    <i class="fas fa-camera"></i>
+                  </div>
+                  <input type="file" accept="image/*" (change)="onPhotoUpload($event, editingPatient)">
+                </div>
+                <p class="text-muted mt-2">{{ translationService.translate('clickToChangePatientPhoto') }}</p>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editName" class="form-label">{{ translationService.translate('fullName') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editName"
+                  [(ngModel)]="editingPatient.name"
+                  name="editName"
+                  required
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editPhone" class="form-label">{{ translationService.translate('phoneNumber') }} *</label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="editPhone"
+                  [(ngModel)]="editingPatient.phone"
+                  name="editPhone"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editEmail" class="form-label">{{ translationService.translate('email') }}</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="editEmail"
+                  [(ngModel)]="editingPatient.email"
+                  name="editEmail"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editNationalId" class="form-label">{{ translationService.translate('NATIONAL_ID') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editNationalId"
+                  [(ngModel)]="editingPatient.nationalId"
+                  name="editNationalId"
+                  minlength="8"
+                  maxlength="13"
+                  placeholder="12345678"
+                  required
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editDateOfBirth" class="form-label">{{ translationService.translate('dateOfBirth') }}</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="editDateOfBirth"
+                  [(ngModel)]="editingPatient.dateOfBirth"
+                  name="editDateOfBirth"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editGender" class="form-label">{{ translationService.translate('gender') }}</label>
+                <select
+                  class="form-select"
+                  id="editGender"
+                  [(ngModel)]="editingPatient.gender"
+                  name="editGender"
+                >
+                  <option value="male">{{ translationService.translate('male') }}</option>
+                  <option value="female">{{ translationService.translate('female') }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+                              <label for="editAddress" class="form-label">{{ translationService.translate('address') }} *</label>
+              <textarea
+                class="form-control"
+                id="editAddress"
+                rows="3"
+                [(ngModel)]="editingPatient.address"
+                name="editAddress"
+                required
+              ></textarea>
+            </div>
+
+            <!-- Emergency Contact Section -->
+            <div class="card mt-4">
+              <div class="card-header bg-light">
+                <h6 class="mb-0">
+                  <i class="fas fa-phone-alt me-2" style="color: #D6B96A;"></i>
+                  {{ translationService.translate('emergencyContact') }}
+                </h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label for="editEmergencyName" class="form-label">{{ translationService.translate('contactName') }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="editEmergencyName"
+                      [(ngModel)]="editingPatient.emergencyContact!.name"
+                      name="editEmergencyName"
+                    >
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="editEmergencyPhone" class="form-label">{{ translationService.translate('contactPhone') }}</label>
+                    <input
+                      type="tel"
+                      class="form-control"
+                      id="editEmergencyPhone"
+                      [(ngModel)]="editingPatient.emergencyContact!.phone"
+                      name="editEmergencyPhone"
+                    >
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="editEmergencyRelationship" class="form-label">{{ translationService.translate('relationship') }}</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="editEmergencyRelationship"
+                      [(ngModel)]="editingPatient.emergencyContact!.relationship"
+                      name="editEmergencyRelationship"
+                      [placeholder]="translationService.translate('relationshipPlaceholder')"
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+                {{ translationService.translate('cancel') }}
+              </button>
+              <button type="submit" class="btn btn-warning">
+                <i class="fas fa-save me-2" style="color: #D6B96A;"></i>
+                {{ translationService.translate('updatePatient') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Details Modal -->
+  <div class="modal fade show d-block" *ngIf="showDetailsModal && selectedPatient" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-user me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('patientDetails') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDetailsModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-8">
+              <h4>{{ selectedPatient.name }}</h4>
+              <p class="text-muted mb-3">{{ translationService.translate('NATIONAL_ID') }}: {{ selectedPatient.nationalId }}</p>
+              
+                              <div class="row mb-3">
+                  <div class="col-sm-6">
+                    <strong>{{ translationService.translate('phone') }}:</strong> {{ selectedPatient.phone }}
+                  </div>
+                  <div class="col-sm-6" *ngIf="selectedPatient.email">
+                    <strong>{{ translationService.translate('email') }}:</strong> {{ selectedPatient.email }}
+                  </div>
+                </div>
+              
+                              <div class="row mb-3">
+                  <div class="col-sm-6">
+                    <strong>{{ translationService.translate('age') }}:</strong> {{ getAge(selectedPatient.dateOfBirth) }} {{ translationService.translate('years') }}
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>{{ translationService.translate('gender') }}:</strong> {{ translationService.getGenderText(selectedPatient.gender) }}
+                  </div>
+                </div>
+              
+              <div class="mb-3">
+                <strong>{{ translationService.translate('address') }}:</strong><br>
+                {{ selectedPatient.address }}
+              </div>
+              
+              <div class="mb-3" *ngIf="selectedPatient.emergencyContact">
+                <strong>{{ translationService.translate('emergencyContact') }}:</strong><br>
+                <div class="ms-3">
+                  <strong>{{ translationService.translate('name') }}:</strong> {{ selectedPatient.emergencyContact.name }}<br>
+                  <strong>{{ translationService.translate('phone') }}:</strong> {{ selectedPatient.emergencyContact.phone }}<br>
+                  <strong>{{ translationService.translate('relationship') }}:</strong> {{ selectedPatient.emergencyContact.relationship }}
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-sm-6">
+                  <strong>{{ translationService.translate('created') }}:</strong> {{ selectedPatient.createdAt | date }}
+                </div>
+                <div class="col-sm-6">
+                  <strong>{{ translationService.translate('updated') }}:</strong> {{ selectedPatient.updatedAt | date }}
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-center">
+              <div class="photo-preview mx-auto mb-3">
+                <img *ngIf="getPatientPhoto(selectedPatient) && getPatientPhoto(selectedPatient).startsWith('data:image')" [src]="getPatientPhoto(selectedPatient)" [alt]="selectedPatient.name">
+                <span *ngIf="!getPatientPhoto(selectedPatient) || !getPatientPhoto(selectedPatient).startsWith('data:image')">{{ getPatientInitials(selectedPatient) }}</span>
+              </div>
+              <span class="badge bg-primary">{{ selectedPatient.nationalId }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">
+            {{ translationService.translate('close') }}
+          </button>
+          <button type="button" class="btn btn-warning" (click)="openEditModal(selectedPatient)">
+            <i class="fas fa-edit me-2"></i>
+            {{ translationService.translate('editPatient') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

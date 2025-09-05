@@ -1,0 +1,445 @@
+<div class="billing-page fade-in">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-0 text-white">
+        <i class="fas fa-file-invoice-dollar me-2" style="color: #D6B96A;"></i>
+        {{ translationService.translate('billingManagement') }}
+      </h2>
+      <p class="text-white mb-0">{{ translationService.translate('manageInvoicesPayments') }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <i class="fas fa-plus me-2" style="color: #D6B96A;"></i>
+      {{ translationService.translate('createInvoice') }}
+    </button>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-lg-4 col-md-6 mb-3">
+      <div class="card dashboard-card primary">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="fw-bold mb-1 text-primary">${{ getTotalRevenue() | number:'1.2-2' }}</h3>
+              <p class="mb-0 text-muted">{{ translationService.translate('totalRevenue') }}</p>
+            </div>
+            <i class="fas fa-dollar-sign fa-2x text-primary opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+      <div class="card dashboard-card secondary">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="fw-bold mb-1 text-secondary">${{ getPendingAmount() | number:'1.2-2' }}</h3>
+              <p class="mb-0 text-muted">{{ translationService.translate('pendingAmount') }}</p>
+            </div>
+            <i class="fas fa-clock fa-2x text-secondary opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+      <div class="card dashboard-card accent">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="fw-bold mb-1 text-accent">{{ invoices.length }}</h3>
+              <p class="mb-0 text-muted">{{ translationService.translate('totalInvoices') }}</p>
+            </div>
+            <i class="fas fa-file-invoice fa-2x text-accent opacity-50"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-search" style="color: #D6B96A;"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              [placeholder]="translationService.translate('searchByPatientInvoice')"
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+            >
+          </div>
+        </div>
+        <div class="col-md-4">
+          <select
+            class="form-select"
+            [(ngModel)]="statusFilter"
+            (change)="onSearch()"
+          >
+            <option value="">{{ translationService.translate('allStatus') }}</option>
+            <option value="paid">{{ translationService.translate('paid') }}</option>
+            <option value="unpaid">{{ translationService.translate('unpaid') }}</option>
+            <option value="partially-paid">{{ translationService.translate('partiallyPaid') }}</option>
+          </select>
+        </div>
+        <div class="col-md-2 text-end">
+          <span class="text-muted">
+            <strong>{{ filteredInvoices.length }}</strong> {{ translationService.translate('invoices') }}
+          </span>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoices Table -->
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+                            <tr>
+                  <th style="color: white;">{{ translationService.translate('invoice') }} #</th>
+                  <th style="color: white;">{{ translationService.translate('patient') }}</th>
+                  <th style="color: white;">{{ translationService.translate('issueDate') }}</th>
+                  <th style="color: white;">{{ translationService.translate('dueDate') }}</th>
+                  <th style="color: white;">{{ translationService.translate('amount') }}</th>
+                  <th style="color: white;">{{ translationService.translate('status') }}</th>
+                  <th style="color: white;">{{ translationService.translate('Actions') }}</th>
+                </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let invoice of filteredInvoices" class="align-middle">
+              <td>
+                <span class="fw-bold">#{{ invoice.id }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar bg-primary text-white me-2 d-flex align-items-center justify-content-center">
+                    {{ invoice.patient?.name?.charAt(0) || '?' }}
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ invoice.patient?.name }}</div>
+                    <small class="text-muted">{{ invoice.patient?.phone }}</small>
+                  </div>
+                </div>
+              </td>
+              <td>{{ invoice.issueDate | date:'MMM d, y' }}</td>
+              <td>{{ invoice.dueDate | date:'MMM d, y' }}</td>
+              <td class="fw-bold">${{ invoice.amount | number:'1.2-2' }}</td>
+              <td>
+                <span class="badge" [class]="getStatusBadgeClass(invoice.status)">
+                  {{ getStatusDisplayText(invoice.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="btn-group" role="group">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary btn-sm"
+                    (click)="openDetailsModal(invoice)"
+                                            [title]="translationService.translate('viewDetails')"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-success btn-sm"
+                    (click)="updateInvoiceStatus(invoice, 'paid')"
+                                            [title]="translationService.translate('markAsPaid')"
+                    *ngIf="invoice.status !== 'paid'"
+                  >
+                    <i class="fas fa-check"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm"
+                    (click)="deleteInvoice(invoice)"
+                    title="Delete"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="filteredInvoices.length === 0" class="text-center py-5">
+          <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+          <h5 class="text-muted">{{ translationService.translate('noInvoicesFound') }}</h5>
+          <p class="text-muted">{{ translationService.translate('tryAdjustingSearch') }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Invoice Modal -->
+  <div class="modal fade show d-block" *ngIf="showAddModal" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-file-invoice-dollar me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('createNewInvoice') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="addInvoice()" #invoiceForm="ngForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="patient" class="form-label">{{ translationService.translate('patient') }} *</label>
+                <div class="position-relative">
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="patientSearch"
+                    [placeholder]="translationService.translate('searchPatientsPlaceholder')"
+                    [(ngModel)]="patientSearchTerm"
+                    (input)="filterPatients()"
+                    (focus)="onPatientInputFocus()"
+                    (blur)="hidePatientDropdown()"
+                  >
+                  <div class="dropdown-menu w-100 show" *ngIf="showPatientDropdown && filteredPatients.length > 0" style="max-height: 200px; overflow-y: auto; z-index: 1050;">
+                    <div 
+                      *ngFor="let patient of filteredPatients" 
+                      class="dropdown-item cursor-pointer"
+                      (click)="selectPatient(patient)"
+                      style="cursor: pointer;"
+                    >
+                      <div class="d-flex align-items-center">
+                        <div class="avatar bg-primary text-white me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%; font-size: 12px;">
+                          {{ patient.name.charAt(0) }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ patient.name }}</div>
+                          <small class="text-muted">{{ patient.phone }}</small>
+                          <small *ngIf="patient.nationalId" class="text-muted d-block">ID: {{ patient.nationalId }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                        <div *ngIf="selectedPatient" class="mt-2">
+          <span class="badge bg-primary">
+            <i class="fas fa-user me-1"></i>
+            {{ selectedPatient.name }} - {{ selectedPatient.phone }}
+          </span>
+        </div>
+        <div class="mt-2">
+          <small class="text-muted">
+            Available patients: {{ patients.length }} | Filtered: {{ filteredPatients.length }}
+          </small>
+        </div>
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="issueDate" class="form-label">{{ translationService.translate('issueDate') }}</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="issueDate"
+                  [(ngModel)]="newInvoice.issueDate"
+                  name="issueDate"
+                >
+              </div>
+              <div class="col-md-3 mb-3">
+                <label for="dueDate" class="form-label">{{ translationService.translate('dueDate') }}</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="dueDate"
+                  [(ngModel)]="newInvoice.dueDate"
+                  name="dueDate"
+                >
+              </div>
+            </div>
+
+            <!-- Services Section -->
+            <div class="mb-4">
+              <h6 class="fw-bold mb-3">{{ translationService.translate('services') }}</h6>
+              
+              <!-- Add Service Form -->
+              <div class="card bg-light mb-3">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <input
+                        type="text"
+                        class="form-control"
+                        [placeholder]="translationService.translate('addServicePlaceholder')"
+                        [(ngModel)]="newService.description"
+                        name="serviceDescription"
+                      >
+                    </div>
+                    <div class="col-md-2">
+                      <input
+                        type="number"
+                        class="form-control"
+                        [placeholder]="translationService.translate('quantityPlaceholder')"
+                        [(ngModel)]="newService.quantity"
+                        name="serviceQuantity"
+                        min="1"
+                      >
+                    </div>
+                    <div class="col-md-3">
+                      <input
+                        type="number"
+                        class="form-control"
+                        [placeholder]="translationService.translate('unitPricePlaceholder')"
+                        [(ngModel)]="newService.unitPrice"
+                        name="servicePrice"
+                        min="0"
+                        step="0.01"
+                      >
+                    </div>
+                    <div class="col-md-3">
+                      <button
+                        type="button"
+                        class="btn btn-primary w-100"
+                        (click)="addService()"
+                      >
+                        <i class="fas fa-plus me-2"></i>{{ translationService.translate('addService') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Services List -->
+              <div class="table-responsive" *ngIf="newInvoice.services.length > 0">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>{{ translationService.translate('description') }}</th>
+                      <th>{{ translationService.translate('quantity') }}</th>
+                      <th>{{ translationService.translate('unitPrice') }}</th>
+                      <th>{{ translationService.translate('total') }}</th>
+                      <th>{{ translationService.translate('action') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let service of newInvoice.services; let i = index">
+                      <td>{{ service.description }}</td>
+                      <td>{{ service.quantity }}</td>
+                      <td>${{ service.unitPrice | number:'1.2-2' }}</td>
+                      <td class="fw-bold">${{ service.total | number:'1.2-2' }}</td>
+                      <td>
+                        <button
+                          type="button"
+                          class="btn btn-outline-danger btn-sm"
+                          (click)="removeService(i)"
+                          [title]="translationService.translate('removeService')"
+                        >
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="3" class="text-end">{{ translationService.translate('totalAmount') }}:</th>
+                      <th class="fw-bold text-primary">${{ newInvoice.amount | number:'1.2-2' }}</th>
+                      <th></th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">
+            {{ translationService.translate('cancel') }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="addInvoice()">
+            <i class="fas fa-save me-2"></i>
+            {{ translationService.translate('createInvoice') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Details Modal -->
+  <div class="modal fade show d-block" *ngIf="showDetailsModal && selectedInvoice" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-file-invoice me-2" style="color: #D6B96A;"></i>
+            Invoice #{{ selectedInvoice.id }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDetailsModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h6 class="fw-bold">{{ translationService.translate('patientInformation') }}</h6>
+              <p class="mb-1"><strong>{{ translationService.translate('name') }}:</strong> {{ selectedInvoice.patient?.name }}</p>
+              <p class="mb-1"><strong>{{ translationService.translate('phone') }}:</strong> {{ selectedInvoice.patient?.phone }}</p>
+            </div>
+            <div class="col-md-6">
+              <h6 class="fw-bold">{{ translationService.translate('invoiceInformation') }}</h6>
+              <p class="mb-1"><strong>{{ translationService.translate('issueDate') }}:</strong> {{ selectedInvoice.issueDate | date:'fullDate' }}</p>
+              <p class="mb-1"><strong>{{ translationService.translate('dueDate') }}:</strong> {{ selectedInvoice.dueDate | date:'fullDate' }}</p>
+              <p class="mb-1">
+                <strong>{{ translationService.translate('status') }}:</strong> 
+                <span class="badge ms-2" [class]="getStatusBadgeClass(selectedInvoice.status)">
+                  {{ getStatusDisplayText(selectedInvoice.status) }}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <h6 class="fw-bold mb-3">{{ translationService.translate('services') }}</h6>
+          <div class="table-responsive">
+            <table class="table table-sm">
+                              <thead>
+                  <tr>
+                    <th>{{ translationService.translate('description') }}</th>
+                    <th>{{ translationService.translate('quantity') }}</th>
+                    <th>{{ translationService.translate('unitPrice') }}</th>
+                    <th>{{ translationService.translate('total') }}</th>
+                  </tr>
+                </thead>
+              <tbody>
+                <tr *ngFor="let service of selectedInvoice.services">
+                  <td>{{ service.description }}</td>
+                  <td>{{ service.quantity }}</td>
+                  <td>${{ service.unitPrice | number:'1.2-2' }}</td>
+                  <td class="fw-bold">${{ service.total | number:'1.2-2' }}</td>
+                </tr>
+              </tbody>
+                              <tfoot>
+                  <tr>
+                    <th colspan="3" class="text-end">{{ translationService.translate('totalAmount') }}:</th>
+                    <th class="fw-bold text-primary">${{ selectedInvoice.amount | number:'1.2-2' }}</th>
+                  </tr>
+                </tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">
+            {{ translationService.translate('close') }}
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-success"
+            (click)="updateInvoiceStatus(selectedInvoice, 'paid')"
+            *ngIf="selectedInvoice.status !== 'paid'"
+          >
+            <i class="fas fa-check me-2"></i>
+            {{ translationService.translate('markAsPaid') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

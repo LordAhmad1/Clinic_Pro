@@ -1,0 +1,83 @@
+.patients-page {
+  padding: 1.5rem;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+.table th {
+  border-top: none;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #000000;
+}
+
+.table td {
+  vertical-align: middle;
+}
+
+.btn-group .btn {
+  border-radius: 6px;
+  margin: 0 2px;
+}
+
+.modal-content {
+  border-radius: 15px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: 1px solid #e9ecef;
+  padding: 1.5rem;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid #e9ecef;
+  padding: 1.5rem;
+}
+
+.bg-pink {
+  background-color: #e91e63 !important;
+}
+
+.form-control,
+.form-select {
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.input-group-text {
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+}
+
+@media (max-width: 768px) {
+  .patients-page {
+    padding: 1rem;
+  }
+  
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .btn-group .btn {
+    margin: 0;
+  }
+}

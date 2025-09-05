@@ -1,0 +1,495 @@
+<div class="doctors-page fade-in" [dir]="translationService.getDirection()">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-0 text-white">
+        <i class="fas fa-user-md me-2" style="color: #D6B96A;"></i>
+        {{ translationService.translate('doctorsManagement') }}
+      </h2>
+      <p class="text-white mb-0">{{ translationService.translate('manageDoctorsSpecializations') }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <i class="fas fa-user-plus me-2" style="color: #D6B96A;"></i>
+      {{ translationService.translate('addDoctor') }}
+    </button>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-search" style="color: #D6B96A;"></i>
+            </span>
+            <input
+              type="text"
+              class="form-control"
+              [placeholder]="translationService.translate('searchDoctorsPlaceholder')"
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+            >
+          </div>
+        </div>
+        <div class="col-md-6 text-end">
+          <span class="text-muted">
+            {{ translationService.translate('totalDoctors') }}: <strong>{{ filteredDoctors.length }}</strong>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctors Grid -->
+  <div class="row">
+    <div class="col-lg-4 col-md-6 mb-4" *ngFor="let doctor of filteredDoctors">
+      <div class="card doctor-card h-100">
+        <div class="card-body text-center">
+          <div class="doctor-avatar mb-3">
+            <img 
+              [src]="doctor.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1'" 
+              [alt]="doctor.name"
+              class="rounded-circle"
+              style="width: 80px; height: 80px; object-fit: cover;"
+            >
+          </div>
+          <h5 class="card-title mb-1">{{ doctor.name }}</h5>
+          <p class="text-primary mb-2">{{ doctor.specialization }}</p>
+          <p class="text-muted small mb-3">
+            <i class="fas fa-envelope me-1" style="color: #D6B96A;"></i>{{ doctor.email }}
+          </p>
+          <p class="text-muted small mb-3" *ngIf="doctor.phone">
+            <i class="fas fa-phone me-1" style="color: #D6B96A;"></i>{{ doctor.phone }}
+          </p>
+          
+          <!-- Working Hours -->
+          <div class="working-hours mb-3" *ngIf="doctor.workingHours">
+            <small class="text-muted d-block">{{ translationService.translate('workingHours') }}:</small>
+            <small class="fw-semibold">{{ doctor.workingHours.start }} - {{ doctor.workingHours.end }}</small>
+            <div class="mt-1">
+              <small class="text-muted">{{ getWorkingDaysText(doctor.workingHours) }}</small>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="btn-group w-100" role="group">
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm"
+              (click)="openDetailsModal(doctor)"
+              [title]="translationService.translate('viewDetails')"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-warning btn-sm"
+              (click)="openEditModal(doctor)"
+              [title]="translationService.translate('edit')"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm"
+              (click)="deleteDoctor(doctor)"
+              [title]="translationService.translate('delete')"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="filteredDoctors.length === 0" class="text-center py-5">
+    <i class="fas fa-user-md-slash fa-3x text-muted mb-3"></i>
+    <h5 class="text-muted">{{ translationService.translate('noDoctorsFound') }}</h5>
+    <p class="text-muted">{{ translationService.translate('tryAdjustingSearch') }}</p>
+  </div>
+
+  <!-- Add Doctor Modal -->
+  <div class="modal fade show d-block" *ngIf="showAddModal" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-user-md me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('ADD_NEW_DOCTOR') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="addDoctor()" #doctorForm="ngForm">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="name" class="form-label">{{ translationService.translate('fullName') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  [(ngModel)]="newDoctor.name"
+                  name="name"
+                  required
+                  placeholder="Dr. John Doe"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="email" class="form-label">{{ translationService.translate('email') }} *</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  [(ngModel)]="newDoctor.email"
+                  name="email"
+                  required
+                  placeholder="doctor@clinic.com"
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="nationalId" class="form-label">{{ translationService.translate('NATIONAL_ID') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nationalId"
+                  [(ngModel)]="newDoctor.nationalId"
+                  name="nationalId"
+                  required
+                  minlength="8"
+                  maxlength="13"
+                  placeholder="12345678"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="phone" class="form-label">{{ translationService.translate('phoneNumber') }}</label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="phone"
+                  [(ngModel)]="newDoctor.phone"
+                  name="phone"
+                  placeholder="+966501234567"
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="specialization" class="form-label">{{ translationService.translate('specialization') }} *</label>
+                <select
+                  class="form-select"
+                  id="specialization"
+                  [(ngModel)]="newDoctor.specialization"
+                  name="specialization"
+                  required
+                >
+                  <option value="">{{ translationService.translate('SELECT_SPECIALIZATION') }}</option>
+                  <option *ngFor="let spec of specializations" [value]="spec">{{ spec }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Photo Upload Section -->
+            <div class="row mb-4">
+              <div class="col-12 text-center">
+                <div class="photo-upload">
+                  <div class="photo-preview mx-auto">
+                    <img *ngIf="newDoctor.avatar" [src]="newDoctor.avatar" [alt]="newDoctor.name">
+                    <span *ngIf="!newDoctor.avatar">{{ getDoctorInitials(newDoctor) || 'D' }}</span>
+                  </div>
+                  <div class="photo-upload-overlay">
+                    <i class="fas fa-camera" style="color: #D6B96A;"></i>
+                  </div>
+                  <input type="file" accept="image/*" (change)="onPhotoUpload($event, false)">
+                </div>
+                <p class="text-muted mt-2">{{ translationService.translate('CLICK_TO_UPLOAD_DOCTOR_PHOTO') }}</p>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="startTime" class="form-label">{{ translationService.translate('startTime') }}</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="startTime"
+                  [(ngModel)]="newDoctor.workingHours!.start"
+                  name="startTime"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="endTime" class="form-label">{{ translationService.translate('endTime') }}</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="endTime"
+                  [(ngModel)]="newDoctor.workingHours!.end"
+                  name="endTime"
+                >
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ translationService.translate('workingDays') }}</label>
+              <div class="row">
+                <div class="col-md-4 col-6" *ngFor="let day of weekDays">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      [id]="'day-' + day"
+                      [checked]="isDaySelected(day)"
+                      (change)="onWorkingDayChange(day, $event)"
+                    >
+                    <label class="form-check-label" [for]="'day-' + day">
+                      {{ translationService.translate(day.toUpperCase()) }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">
+            {{ translationService.translate('CANCEL') }}
+          </button>
+          <button type="button" class="btn btn-primary" (click)="addDoctor()">
+            <i class="fas fa-save me-2"></i>
+            {{ translationService.translate('SAVE_DOCTOR') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Doctor Details Modal -->
+  <div class="modal fade show d-block" *ngIf="showDetailsModal && selectedDoctor" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-user-md me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('doctorDetails') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDetailsModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-4 text-center">
+              <img 
+                [src]="selectedDoctor.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=1'" 
+                [alt]="selectedDoctor.name"
+                class="rounded-circle mb-3"
+                style="width: 120px; height: 120px; object-fit: cover;"
+              >
+              <h4>{{ selectedDoctor.name }}</h4>
+              <p class="text-primary">{{ selectedDoctor.specialization }}</p>
+            </div>
+            <div class="col-md-8">
+              <div class="row mb-3">
+                <div class="col-sm-6">
+                  <strong>{{ translationService.translate('email') }}:</strong><br>
+                  <span class="text-muted">{{ selectedDoctor.email }}</span>
+                </div>
+                <div class="col-sm-6" *ngIf="selectedDoctor.phone">
+                  <strong>{{ translationService.translate('phone') }}:</strong><br>
+                  <span class="text-muted">{{ selectedDoctor.phone }}</span>
+                </div>
+              </div>
+              
+              <div class="row mb-3" *ngIf="selectedDoctor.nationalId">
+                <div class="col-sm-6">
+                  <strong>{{ translationService.translate('NATIONAL_ID') }}:</strong><br>
+                  <span class="text-muted">{{ selectedDoctor.nationalId }}</span>
+                </div>
+              </div>
+              
+              <div class="mb-3" *ngIf="selectedDoctor.workingHours">
+                <strong>{{ translationService.translate('workingHours') }}:</strong><br>
+                <span class="text-muted">{{ selectedDoctor.workingHours.start }} - {{ selectedDoctor.workingHours.end }}</span>
+              </div>
+              
+              <div class="mb-3" *ngIf="selectedDoctor.workingHours">
+                <strong>{{ translationService.translate('workingDays') }}:</strong><br>
+                <span class="text-muted">{{ getWorkingDaysText(selectedDoctor.workingHours) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailsModal()">
+            {{ translationService.translate('CLOSE') }}
+          </button>
+          <button type="button" class="btn btn-warning" (click)="openEditModal(selectedDoctor)">
+            <i class="fas fa-edit me-2"></i>
+            {{ translationService.translate('EDIT_DOCTOR') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Doctor Modal -->
+  <div class="modal fade show d-block" *ngIf="showEditModal && editingDoctor" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header" style="border-radius: 16px 16px 0 0; background: linear-gradient(135deg, var(--primary-color), var(--dark-red)); border: none;">
+          <h5 class="modal-title text-white">
+            <i class="fas fa-user-edit me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('EDIT_DOCTOR') }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()" style="filter: brightness(1.2); transform: scale(1.1);"></button>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="updateDoctor()" #editForm="ngForm">
+            <!-- Photo Upload Section -->
+            <div class="row mb-4">
+              <div class="col-12 text-center">
+                <div class="photo-upload">
+                  <div class="photo-preview mx-auto">
+                    <img *ngIf="editingDoctor.avatar" [src]="editingDoctor.avatar" [alt]="editingDoctor.name">
+                    <span *ngIf="!editingDoctor.avatar">{{ getDoctorInitials(editingDoctor) || 'D' }}</span>
+                  </div>
+                  <div class="photo-upload-overlay">
+                    <i class="fas fa-camera" style="color: #D6B96A;"></i>
+                  </div>
+                  <input type="file" accept="image/*" (change)="onPhotoUpload($event, true)">
+                </div>
+                <p class="text-muted mt-2">Click to change doctor photo</p>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editName" class="form-label">{{ translationService.translate('fullName') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editName"
+                  [(ngModel)]="editingDoctor.name"
+                  name="editName"
+                  required
+                  placeholder="Dr. John Doe"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editEmail" class="form-label">{{ translationService.translate('email') }} *</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="editEmail"
+                  [(ngModel)]="editingDoctor.email"
+                  name="editEmail"
+                  required
+                  placeholder="doctor@clinic.com"
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editNationalId" class="form-label">{{ translationService.translate('NATIONAL_ID') }} *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="editNationalId"
+                  [(ngModel)]="editingDoctor.nationalId"
+                  name="editNationalId"
+                  required
+                  minlength="8"
+                  maxlength="13"
+                  placeholder="12345678"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editPhone" class="form-label">{{ translationService.translate('phoneNumber') }}</label>
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="editPhone"
+                  [(ngModel)]="editingDoctor.phone"
+                  name="editPhone"
+                  placeholder="+966501234567"
+                >
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editSpecialization" class="form-label">{{ translationService.translate('specialization') }} *</label>
+                <select
+                  class="form-select"
+                  id="editSpecialization"
+                  [(ngModel)]="editingDoctor.specialization"
+                  name="editSpecialization"
+                  required
+                >
+                  <option value="">{{ translationService.translate('SELECT_SPECIALIZATION') }}</option>
+                  <option *ngFor="let spec of specializations" [value]="spec">{{ spec }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="editStartTime" class="form-label">{{ translationService.translate('startTime') }}</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="editStartTime"
+                  [(ngModel)]="editingDoctor.workingHours!.start"
+                  name="editStartTime"
+                >
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="editEndTime" class="form-label">{{ translationService.translate('endTime') }}</label>
+                <input
+                  type="time"
+                  class="form-control"
+                  id="editEndTime"
+                  [(ngModel)]="editingDoctor.workingHours!.end"
+                  name="editEndTime"
+                >
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ translationService.translate('workingDays') }}</label>
+              <div class="row">
+                <div class="col-md-4 col-6" *ngFor="let day of weekDays">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      [id]="'edit-day-' + day"
+                      [checked]="isEditingDaySelected(day)"
+                      (change)="onEditingWorkingDayChange(day, $event)"
+                    >
+                    <label class="form-check-label" [for]="'edit-day-' + day">
+                      {{ translationService.translate(day.toUpperCase()) }}
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            {{ translationService.translate('CANCEL') }}
+          </button>
+          <button type="button" class="btn btn-warning" (click)="updateDoctor()">
+            <i class="fas fa-save me-2" style="color: #D6B96A;"></i>
+            {{ translationService.translate('UPDATE_DOCTOR') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
